@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+    my-docker-webapp:
+      build:
+        context: . # Usa el Dockerfile en el directorio actual
+        dockerfile: Dockerfile
+      container_name: my_app_java_compose # Nombre del contenedor
+      ports:
+        - "8090:8090" # Mapea puerto_host:puerto_contenedor
+      networks:
+        - mi_red_app_compose
+      depends_on:
+        - mysql_db
+      environment:
+        SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db:3306/docker_webapp_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+        SPRING_DATASOURCE_USERNAME: root
+        SPRING_DATASOURCE_PASSWORD: pass_local
+
+    mysql_db: # Nombre del servicio para MySQL
+      image: mysql:8.0
+      container_name: mi_mysql_compose
+      ports:
+        - "3306:3306"
+      environment:
+        MYSQL_ROOT_PASSWORD: pass_local
+        MYSQL_DATABASE: docker_webapp_db
+      volumes:
+        - mysql_data_compose:/var/lib/mysql
+      networks:
+        - mi_red_app_compose
+
+networks:
+  mi_red_app_compose:
+    driver: bridge
+
+volumes:
+  mysql_data_compose: # Define el volumen para persistencia de MySQL
+    driver: local
